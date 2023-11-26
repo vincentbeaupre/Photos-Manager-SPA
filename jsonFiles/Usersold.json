@@ -1,0 +1,65 @@
+[
+    {
+        "Id": 1,
+        "Avatar": "e1c5f210-653d-11ed-b823-538dcee7550d.png",
+        "Created": 1601500396,
+        "Name": "Nicolas Chourot",
+        "Email": "Nicolas.Chourot@clg.qc.ca",
+        "VerifyCode": "verified",
+        "Password": "password"
+    },
+    {
+        "Id": 2,
+        "Name": "Saliha Yacoub",
+        "Email": "Saliha.Yacoub@clg.qc.ca",
+        "Created": 1667507170,
+        "VerifyCode": "verified",
+        "Avatar": "936aaa10-5bb6-11ed-841f-d793370c0d76.png",
+        "Password": "123123"
+    },
+    {
+        "Id": 3,
+        "Name": "Nicolas Chourot",
+        "Email": "nicolaschourot@videotron.ca2",
+        "Created": 1667511627,
+        "VerifyCode": "verified",
+        "Avatar": "fa167290-7262-11ed-a54e-7fb6eb11a39e.png",
+        "Password": "123123"
+    },
+    {
+        "Id": 4,
+        "Name": "Bruce Willis",
+        "Email": "Bruce.Wilis@gmail.ca",
+        "Created": 1667773022,
+        "VerifyCode": "verified",
+        "Avatar": "2c1a4660-5ee3-11ed-80be-97bb4aaebbdd.png",
+        "Password": "123123"
+    },
+    {
+        "Id": 5,
+        "Password": "123123",
+        "Name": "Stéphane Chassé",
+        "Email": "Stephane.Chasse@clg.qc.ca",
+        "Created": 1667855802,
+        "VerifyCode": "verified",
+        "Avatar": "79d024d0-5ee1-11ed-b4cd-ff8d46d892b6.png"
+    },
+    {
+        "Id": 6,
+        "Name": "Patrice Roy",
+        "Email": "Patrice.Roy@clg.qc.ca",
+        "Created": 1667856737,
+        "VerifyCode": "verified",
+        "Avatar": "a71baf70-5ee3-11ed-80be-97bb4aaebbdd.png",
+        "Password": "123123"
+    },
+    {
+        "Id": 7,
+        "Avatar": "f5795080-4468-11ee-8281-2f600646bb7f.jpeg",
+        "Name": "Nicolas Chourot",
+        "Email": "nicolaschourot@videotron.ca",
+        "Password": "********",
+        "Created": 1699523187,
+        "VerifyCode": 123456
+    }
+]

@@ -1,0 +1,44 @@
+[
+    {
+        "Id": "1",
+        "Name": "Nicolas Chourot",
+        "Phone": "(450) 430-3120",
+        "Email": "Nicolas.Chourot@clg.qc.ca",
+        "Avatar": "f5795080-4468-11ee-8281-2f600646bb7f.jpeg"
+    },
+    {
+        "Id": "2",
+        "Name": "Saliha Yacoub",
+        "Phone": "(450) 430-3120",
+        "Email": "Saliha.Yacoub@clg.qc.ca",
+        "Avatar": "5b156ce0-46c0-11ee-9c7d-4dfffb69e19c.png"
+    },
+    {
+        "Id": 3,
+        "Name": "Stéphane Chassé",
+        "Phone": "(450) 430-4120",
+        "Email": "Stephance.Chasse@clg.qc.ca",
+        "Avatar": "79d024d0-5ee1-11ed-b4cd-ff8d46d892b6.png"
+    },
+    {
+        "Id": "4",
+        "Name": "Patrice Roy",
+        "Phone": "(450) 430-3120",
+        "Email": "Patrice.Roy@clg.qc.ca",
+        "Avatar": "a634d710-46c0-11ee-9c7d-4dfffb69e19c.png"
+    },
+    {
+        "Id": "c3812fe0-7fd1-11ee-86e9-290c8ef33cfd",
+        "Name": "Étienne Forest",
+        "Phone": "(450) 430-3120",
+        "Email": "Etienne.Forest@clg.qc.ca",
+        "Avatar": "c381a510-7fd1-11ee-86e9-290c8ef33cfd.png"
+    },
+    {
+        "Id": "16e8f780-808b-11ee-9edd-d9af5396d5c0",
+        "Name": "Lina Jabbour",
+        "Phone": "(123) 123-1232",
+        "Email": "Lina.Jabbour@clg.qc.ca",
+        "Avatar": "1c28cef0-808b-11ee-9edd-d9af5396d5c0.jpeg"
+    }
+]
