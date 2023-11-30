@@ -1,6 +1,7 @@
 ////////////////////////////////////////////// API photos_APIs call ///////////////////////////////////////////////////////
 
-const serverHost = "http://localhost:5000";
+// const serverHost = "http://localhost:5000";
+const serverHost = "https://rose-cyclic-thrill.glitch.me";
 const photos_API = "/api/photos";
 
 class API {
