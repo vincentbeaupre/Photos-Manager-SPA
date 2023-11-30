@@ -1,6 +1,56 @@
 let contentScrollPosition = 0;
 let loginMessage = "";
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+let emailError = "";
+let passwordError = "";
+let loggedUser = API.retrieveLoggedUser();
+
+Init_UI();
+
+function Init_UI() {
+    renderLoginForm();
+}
+
+function getFormData($form) {
+    const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
+    var jsonObject = {};
+    $.each($form.serializeArray(), (index, control) => {
+        jsonObject[control.name] = control.value.replace(removeTag, "");
+    });
+    return jsonObject;
+}
+
+async function login(credentials) {
+
+    await API.login(credentials.Email, credentials.Password);
+
+    //vérifie le statut de l'objet API pour déterminer le succès de login
+    if (API.error) {
+        switch (API.currentStatus) {
+            case 482:
+                passwordError = "Mot de passe incorrect";
+                renderLoginForm();
+                break;
+            case 481:
+                emailError = "Courriel introuvable";
+                renderLoginForm();
+                break;
+            default:
+                renderError("Le serveur ne répond pas");
+        }
+    }
+    else {
+
+        if (loggedUser.VerifyCode != "verified") {
+            // renderVerify();
+        }
+        else if (loggedUser.IsBlocked) {
+            loginMessage = "Vous avez été bloqué par l'administrateur";
+            renderLoginForm();
+        }
+
+        renderPhotos();
+    }
+}
 /// Views rendering
 function showWaitingGif() {
     eraseContent();
@@ -16,9 +66,6 @@ function restoreContentScrollPosition() {
     $("#content")[0].scrollTop = contentScrollPosition;
 }
 function UpdateHeader(title, activeMenuId) {
-    
-    // Récupérer l'utilisateur connecté
-    var loggedUser = API.retrieveLoggedUser();
 
     var userSectionHtml = '';
 
@@ -47,10 +94,19 @@ function UpdateHeader(title, activeMenuId) {
                 <!-- Articles de menu -->
             </div>
         </div>`;
-        
+
     $("#header").html(headerHtml);
 }
-
+function renderError(message) {
+    eraseContent();
+    $("#content").append(
+        $(`
+            <div class="errorContainer">
+                ${message}
+            </div>
+        `)
+    );
+}
 function renderAbout() {
     timeout();
     saveContentScrollPosition();
@@ -76,6 +132,27 @@ function renderAbout() {
         `))
 }
 
+function renderPhotos() {
+    timeout();
+    eraseContent();
+    UpdateHeader("Liste des Photos", "listPhotos")
+
+    let loggedUser = API.retrieveLoggedUser();
+
+    if (loggedUser) {
+        renderPhotosList();
+    }
+    else {
+        renderLoginForm();
+    }
+}
+
+function renderPhotosList() {
+    $("#content").append(`
+        <h2>Page en construction</h2>
+    `);
+}
+
 function renderCreateProfil() {
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
@@ -88,20 +165,23 @@ function renderCreateProfil() {
     initFormValidation();
     initImageUploaders();
     $('#abortCmd').on('click', renderLoginForm); // call back sur clic
-     // ajouter le mécanisme de vérification de doublon de courriel
+    // ajouter le mécanisme de vérification de doublon de courriel
     addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
-     // call back la soumission du formulaire
+    // call back la soumission du formulaire
     $('#createProfilForm').on("submit", function (event) {
-    let profil = getFormData($('#createProfilForm'));
-    delete profil.matchedPassword;
-    delete profil.matchedEmail;
-    event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
-    showWaitingGif(); // afficher GIF d’attente
-    createProfil(profil); // commander la création au service API
+        let profil = getFormData($('#createProfilForm'));
+        delete profil.matchedPassword;
+        delete profil.matchedEmail;
+        event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
+        showWaitingGif(); // afficher GIF d’attente
+        createProfil(profil); // commander la création au service API
     });
 }
 
 function renderLoginForm() {
+
+    let Email = loggedUser ? loggedUser.Email : "";
+
     noTimeout();
     eraseContent();
     UpdateHeader("Connexion", "login");
@@ -119,7 +199,7 @@ function renderLoginForm() {
                     InvalidMessage='Courriel invalide' 
                     placeholder="Courriel" 
                     value='${Email}'>
-                <span style='color:red'>${EmailError}</span>
+                <span style='color:red'>${emailError}</span>
                 
                 <input type='password' 
                     name='Password' 
@@ -144,11 +224,12 @@ function renderLoginForm() {
 
 
     initFormValidation();
+    loginMessage = "";
 
     $('#loginForm').on("submit", function (event) {
-        let profil = getFormData($('#loginForm'));
+        let credentials = getFormData($('#loginForm'));
         event.preventDefault(); // empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        // API.login(profil.email, profil.password);
+        login(credentials);
     });
 }
