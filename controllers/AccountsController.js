@@ -53,7 +53,6 @@ export default class AccountsController extends Controller {
             this.HttpContext.response.badRequest("UserId is not specified.")
         }
     }
-
     sendVerificationEmail(user) {
         let html = `
                 Bonjour ${user.Name}, <br /> <br />
@@ -64,7 +63,6 @@ export default class AccountsController extends Controller {
         const gmail = new Gmail();
         gmail.send(user.Email, 'Vérification de courriel...', html);
     }
-
     sendConfirmedEmail(user) {
         let html = `
                 Bonjour ${user.Name}, <br /> <br />
@@ -73,7 +71,6 @@ export default class AccountsController extends Controller {
         const gmail = new Gmail();
         gmail.send(user.Email, 'Courriel confirmé...', html);
     }
-
     //GET : /accounts/verify?id=...&code=.....
     verify() {
         if (this.repository != null) {
@@ -117,11 +114,13 @@ export default class AccountsController extends Controller {
     register(user) {
         if (this.repository != null) {
             user.Created = utilities.nowInSeconds();
-            user.VerifyCode = utilities.makeVerifyCode(6);
+            let verifyCode = utilities.makeVerifyCode(6);
+            user.VerifyCode = verifyCode;
             user.Authorizations = Authorizations.user();
             let newUser = this.repository.add(user);
             if (this.repository.model.state.isValid) {
                 this.HttpContext.response.created(newUser);
+                newUser.VerifyCode = verifyCode;
                 this.sendVerificationEmail(newUser);
             } else {
                 if (this.repository.model.state.inConflict)
@@ -134,7 +133,7 @@ export default class AccountsController extends Controller {
     }
     // PUT:account/modify body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
     modify(user) {
-        // empty asset members imply no change and there values will be taken from the stored record
+        // empty asset members imply no change and their values will be taken from the stored record
         if (Authorizations.writeGranted(this.HttpContext, Authorizations.user())) {
             if (this.repository != null) {
                 user.Created = utilities.nowInSeconds();
@@ -169,7 +168,27 @@ export default class AccountsController extends Controller {
     }
     // GET:account/remove/id
     remove(id) { // warning! this is not an API endpoint
-        if (Authorizations.writeGranted(this.HttpContext, Authorizations.user()))
+        if (Authorizations.writeGranted(this.HttpContext, Authorizations.user())) {
+            this.tokensRepository.keepByFilter(token => token.User.Id != id);
+            let previousAuthorization = this.authorizations;
+            this.authorizations = Authorizations.user();
             super.remove(id);
+            this.authorizations = previousAuthorization;
+        }
+    }
+    promote(id) {
+
+    }
+    block(id) {
+        if(this.repository != null) {
+            let user = this.repository.findByField("Id", id);
+
+            if(user){
+                user.Authorizations.readAccess = -1;
+            }
+            else{
+                
+            }
+        }
     }
 }
