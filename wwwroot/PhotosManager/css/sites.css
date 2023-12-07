@@ -82,7 +82,7 @@
 .cmdIcon {
     font-size: 1.5rem;
     -webkit-text-stroke-color: white;
-    -webkit-text-fill-color: rgb(0, 87, 204);
+    color: rgb(0, 87, 204);
     text-align: center;
     margin: 8px;
     cursor: pointer;
@@ -140,6 +140,10 @@
 .cancel {
     max-width: 310px;
     margin: auto;
+}
+
+.cancel button {
+    margin-top: 20px;
 }
 
 .confirmForm {

@@ -169,26 +169,70 @@ export default class AccountsController extends Controller {
     // GET:account/remove/id
     remove(id) { // warning! this is not an API endpoint
         if (Authorizations.writeGranted(this.HttpContext, Authorizations.user())) {
-            this.tokensRepository.keepByFilter(token => token.User.Id != id);
+            // this.tokensRepository.keepByFilter(token => token.User.Id != id);
             let previousAuthorization = this.authorizations;
             this.authorizations = Authorizations.user();
             super.remove(id);
             this.authorizations = previousAuthorization;
         }
     }
-    promote(id) {
+    toggleadmin(id) {
+        if (Authorizations.writeGranted(this.HttpContext, Authorizations.user())) {
+            if (this.repository != null) {
+                let user = this.repository.findByField("Id", id);
+                if (user != null) {
+                    if(user.Authorizations.readAccess == 1 && user.Authorizations.writeAccess == 1 )
+                        user.Authorizations = Authorizations.admin();
+                    else
+                        user.Authorizations = Authorizations.user();
 
+                    let updatedUser = this.repository.update(user.Id, user);
+
+                    if (this.repository.model.state.isValid) {
+                        this.HttpContext.response.updated(updatedUser);
+                    }
+                    else {
+                        if (this.repository.model.state.inConflict)
+                            this.HttpContext.response.conflict(this.repository.model.state.errors);
+                        else
+                            this.HttpContext.response.badRequest(this.repository.model.state.errors);
+                    }
+                } else
+                    this.HttpContext.response.notFound();
+            } else
+                this.HttpContext.response.notImplemented();
+        } else
+            this.HttpContext.response.unAuthorized();
     }
-    block(id) {
-        if(this.repository != null) {
-            let user = this.repository.findByField("Id", id);
+    toggleblock(id) {
+        if (Authorizations.writeGranted(this.HttpContext, Authorizations.user())) {
+            if (this.repository != null) {
+                let user = this.repository.findByField("Id", id);
+                if (user != null) {
+                    if(user.Authorizations.readAccess == -1 && user.Authorizations.writeAccess == -1 ){
+                        user.Authorizations = Authorizations.user();
+                    }
+                    else {
+                        user.Authorizations.readAccess = -1;
+                        user.Authorizations.writeAccess = -1;
+                    }
 
-            if(user){
-                user.Authorizations.readAccess = -1;
-            }
-            else{
-                
-            }
-        }
+                    let updatedUser = this.repository.update(user.Id, user);
+
+                    if (this.repository.model.state.isValid) {
+                        this.HttpContext.response.updated(updatedUser);
+                    }
+                    else {
+                        if (this.repository.model.state.inConflict)
+                            this.HttpContext.response.conflict(this.repository.model.state.errors);
+                        else
+                            this.HttpContext.response.badRequest(this.repository.model.state.errors);
+                    }
+                } else
+                    this.HttpContext.response.notFound();
+            } else
+                this.HttpContext.response.notImplemented();
+        } else
+            this.HttpContext.response.unAuthorized();
     }
 }

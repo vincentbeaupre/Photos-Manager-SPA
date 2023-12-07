@@ -130,6 +130,36 @@ class API {
             });
         });
     }
+    static manageAdmin(userId) {
+        API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: serverHost + "/Accounts/toggleadmin/" + userId,
+                type: 'GET',
+                contentType: 'application/json',
+                headers: API.getBearerAuthorizationToken(),
+                success: () => {
+                    resolve(true);
+                },
+                error: xhr => { API.setHttpErrorState(xhr); resolve(false); }
+            });
+        });
+    }
+    static manageBlock(userId) {
+        API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: serverHost + "/Accounts/toggleblock/" + userId,
+                type: 'GET',
+                contentType: 'application/json',
+                headers: API.getBearerAuthorizationToken(),
+                success: () => {
+                    resolve(true);
+                },
+                error: xhr => { API.setHttpErrorState(xhr); resolve(false); }
+            });
+        });
+    }
     static unsubscribeAccount(userId) {
         API.initHttpState();
         return new Promise(resolve => {
@@ -140,7 +170,6 @@ class API {
                 data: {},
                 headers: API.getBearerAuthorizationToken(),
                 success: () => {
-                    API.deConnect();
                     resolve(true);
                 },
                 error: xhr => { API.setHttpErrorState(xhr); resolve(false); }

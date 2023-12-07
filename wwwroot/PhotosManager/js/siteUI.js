@@ -21,6 +21,18 @@ function getFormData($form) {
     });
     return jsonObject;
 }
+async function getUsers(userId) {
+    
+    let users = await API.GetAccounts();
+
+    if (API.error) {
+        renderError("Un problème est survenu...");
+    }
+    else {
+        users = users.data.filter(user => user.Id !== userId);
+        return users;
+    }
+}
 async function login(credentials) {
 
     email = credentials.Email;
@@ -49,8 +61,8 @@ async function login(credentials) {
     else {
 
         if (loggedUser.IsBlocked) {
+            logout();
             loginMessage = "Vous avez été bloqué par l'administrateur";
-            renderLoginForm();
         }
         else if (loggedUser.VerifyCode != "verified") {
             renderVerify();
@@ -80,6 +92,20 @@ async function createProfile(profile) {
         renderLoginForm();
     }
 }
+async function deleteProfile() {
+    
+    let loggedUser = API.retrieveLoggedUser();
+
+    await API.unsubscribeAccount(loggedUser.Id);
+
+    if (API.error) {
+        renderError("Un problème est survenu lors de la suppression de votre profil.");
+    }
+    else {
+        logout();
+        loginMessage = "Votre compte a été supprimé avec succès.";
+    }
+}
 async function modifyProfile(profile) {
     
     await API.modifyUserProfil(profile);
@@ -98,6 +124,40 @@ async function modifyProfile(profile) {
             renderPhotos();
         }
     }
+}
+async function manageAdmin(userId) {
+    await API.manageAdmin(userId);
+
+    if (API.error) {
+        renderError("Une erreur est survenue...")
+    }
+    else {
+        renderManageUsers();
+    }
+
+}
+async function manageBlock(userId) {
+    await API.manageBlock(userId);
+
+    if (API.error) {
+        renderError("Une erreur est survenue...")
+    }
+    else {
+        renderManageUsers();
+    }
+
+}
+// à modifier après avoir géré les photos...
+async function deleteUser(userId) {
+    await API.unsubscribeAccount(userId);
+
+    if (API.error) {
+        renderError(API.error)
+    }
+    else {
+        renderManageUsers();
+    }
+
 }
 async function verify(verifyCode) {
 
@@ -179,28 +239,32 @@ function UpdateHeader(title, activeMenuId) {
             <span class="dropdown-item" id="listPhotosMenuCmd">
                 <i class="menuIcon fa fa-image mx-2"></i>
                 Liste des photos
-            </span>
-            <div class="dropdown-divider"></div>
-            <span class="dropdown-item" id="sortByDateCmd">
-                <i class="menuIcon fa fa-check mx-2"></i>
-                <i class="menuIcon fa fa-calendar mx-2"></i>
-                Photos par date de création
-            </span>
-            <span class="dropdown-item" id="sortByOwnersCmd">
-                <i class="menuIcon fa fa-fw mx-2"></i>
-                <i class="menuIcon fa fa-users mx-2"></i>
-                Photos par créateur
-            </span>
-            <span class="dropdown-item" id="sortByLikesCmd">
-                <i class="menuIcon fa fa-fw mx-2"></i>
-                <i class="menuIcon fa fa-user mx-2"></i>
-                Photos les plus aiméés
-            </span>
-            <span class="dropdown-item" id="ownerOnlyCmd">
-                <i class="menuIcon fa fa-fw mx-2"></i>
-                <i class="menuIcon fa fa-user mx-2"></i>
-                Mes photos
             </span>`;
+
+            if(activeMenuId === "listPhotos") {
+                menuItemsHtml += `
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item" id="sortByDateCmd">
+                    <i class="menuIcon fa fa-check mx-2"></i>
+                    <i class="menuIcon fa fa-calendar mx-2"></i>
+                    Photos par date de création
+                </span>
+                <span class="dropdown-item" id="sortByOwnersCmd">
+                    <i class="menuIcon fa fa-fw mx-2"></i>
+                    <i class="menuIcon fa fa-users mx-2"></i>
+                    Photos par créateur
+                </span>
+                <span class="dropdown-item" id="sortByLikesCmd">
+                    <i class="menuIcon fa fa-fw mx-2"></i>
+                    <i class="menuIcon fa fa-user mx-2"></i>
+                    Photos les plus aiméés
+                </span>
+                <span class="dropdown-item" id="ownerOnlyCmd">
+                    <i class="menuIcon fa fa-fw mx-2"></i>
+                    <i class="menuIcon fa fa-user mx-2"></i>
+                    Mes photos
+                </span>`;
+            }
         }
 
 
@@ -256,6 +320,9 @@ function UpdateHeader(title, activeMenuId) {
         });
 
         if (loggedUser.VerifyCode === "verified") {
+            $("#editProfileCmd").click(function () {
+                renderModifyProfile();
+            });
             $("#manageUsersCmd").click(function () {
                 renderManageUsers();
             });
@@ -410,6 +477,53 @@ function renderCreateProfil() {
         createProfile(profile); // commander la création au service API
     });
 }
+function renderDeleteProfile() {
+    timeout();
+    eraseContent();
+    UpdateHeader("Retrait de compte ", "deleteProfile");
+    $("#newPhotoCmd").hide();
+
+    $("#content").append(`
+        <div class="content" style="text-align:center">
+            <h2>Voulez-vous vraiment supprimer votre compte?</h2>
+            <div class="cancel">
+                <button class="form-control btn-danger" id="deleteCmd">Supprimer mon compte</button>
+                <button class="form-control btn-secondary" id="abortCmd">Annuler</button>
+            </div>
+        </div>
+    `);
+
+    $('#deleteCmd').on('click', deleteProfile);
+    $('#abortCmd').on('click', renderPhotos);
+}
+function renderDeleteUser(user) {
+    timeout();
+    eraseContent();
+    UpdateHeader("Retrait de compte ", "deleteProfile");
+    $("#newPhotoCmd").hide();
+
+    $("#content").append(`
+        <div class="content" style="text-align: center;">
+            <h2>Voulez-vous vraiment supprimer cet usager et toutes ses photos?</h2>
+            <div class="UserLayout" style="margin: 0 auto;">
+                <div class="UserAvatar" style="background-image: url('${user.Avatar}');"></div>
+                <div class="UserInfo">
+                    <div class="UserName">${user.Name}</div>
+                    <div class="UserEmail">${user.Email}</div>
+                </div>
+            </div>
+            <div class="cancel">
+                <button class="form-control btn-danger" id="deleteUserCmd">Supprimer ce compte</button>
+                <button class="form-control btn-secondary" id="abortCmd">Annuler</button>
+            </div>
+        </div>
+    `);
+
+    $('#deleteUserCmd').on('click', function() {
+        deleteUser(user.Id);
+    });
+    $('#abortCmd').on('click', renderManageUsers);
+}
 function renderExpiredSession() {
     loginMessage = "Votre session est expirée";
     logout();
@@ -476,15 +590,47 @@ function renderLoginForm() {
         renderCreateProfil();
     });
 }
-function renderManageUsers() {
+async function renderManageUsers() {
     timeout();
     eraseContent();
     UpdateHeader("Gestion des usagers", "manageUsers");
     $("#newPhotoCmd").hide();
 
-    $("#content").append(`
-        <h2>Gestion des usagers</h2>
-    `);
+    let loggedUser = API.retrieveLoggedUser();
+    let users = await getUsers(loggedUser.Id);
+
+    let content = "";
+
+    users.forEach(user => {
+        let modifyAccessIcon = user.Authorizations.readAccess === 2 ? "fas fa-user-cog" : "fas fa-user-alt";
+        let blockUserIcon = user.Authorizations.readAccess === -1 ? "fa fa-ban redCmd " : "fa-regular fa-circle greenCmd";
+
+        content += `
+        <div class="UserContainer">
+            <div class="UserLayout">
+                <div class="UserAvatar" style="background-image: url('${user.Avatar}');"></div>
+                <div class="UserInfo">
+                    <div class="UserName">${user.Name}</div>
+                    <div class="UserEmail">${user.Email}</div>
+                </div>
+            </div>
+            <div class="UserCommandPanel">
+            <div class="cmdIcon dodgerblueCmd ${modifyAccessIcon}" id="manageAdminCmd-${user.Id}"></div>
+            <div class="cmdIcon ${blockUserIcon}" id="manageBlockCmd-${user.Id}"></div>
+            <div class="cmdIcon fas fa-user-slash goldenrodCmd" id="deleteUserCmd-${user.Id}"></div>
+            </div>
+        </div>
+        `;
+    });
+    
+    $("#content").append(content);
+
+    users.forEach(user => {
+        $(`#manageAdminCmd-${user.Id}`).click(() => manageAdmin(user.Id));
+        $(`#manageBlockCmd-${user.Id}`).click(() => manageBlock(user.Id));
+        $(`#deleteUserCmd-${user.Id}`).click(() => renderDeleteUser(user));
+    });
+
 }
 function renderModifyProfile() {
 
@@ -568,15 +714,14 @@ function renderModifyProfile() {
                 <button class="form-control btn-secondary" id="abortCmd">Annuler</button>
             </div>
             <div class="cancel"> <hr>
-                <a href="confirmDeleteProfil.php">
-                    <button class="form-control btn-warning">Effacer le compte</button>
-                </a>
+                <button class="form-control btn-warning" id="deleteCmd">Effacer le compte</button>
             </div>
         `);
     initImageUploaders();
     initFormValidation();
 
-    $('#abortCmd').on('click', renderPhotos); // call back sur clic
+    $('#abortCmd').on('click', renderPhotos);
+    $('#deleteCmd').on('click', renderDeleteProfile);
 
     // ajouter le mécanisme de vérification de doublon de courriel
     addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
@@ -609,7 +754,7 @@ function renderPhotos() {
 function renderPhotosList() {
     timeout();
     eraseContent();
-    UpdateHeader("Liste des photos", "photosList");
+    UpdateHeader("Liste des photos", "listPhotos");
 
     $("#content").append(`
         <h2>Liste des photos (à venir)</h2>
